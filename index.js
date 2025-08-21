@@ -47,7 +47,7 @@ Object.assign(label.style, {
 
 function applyOpacity(percentInt) {
   const clamped = Math.min(100, Math.max(0, percentInt));
-  const opacityValue = (clamped / 100) || 0.1; // 최소치 보정
+  const opacityValue = Math.max(clamped / 100, 0.1); // 최소치 보정
   document.body.style.opacity = String(opacityValue);
   label.innerText = `${clamped}%`;
   setStoredPercent(clamped);
