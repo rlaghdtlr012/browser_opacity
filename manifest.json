@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "browser opacity",
   "version": "0.1",
-  "permissions": ["activeTab"],
+  "permissions": ["activeTab", "storage"],
   "description": "Automatically scrolls the page at a customizable speed.",
   "content_scripts": [
     {

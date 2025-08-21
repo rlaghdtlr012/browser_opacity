@@ -1,6 +1,25 @@
 const STORAGE_KEY = "pageOpacityPercent"; // 0~100 정수로 저장
 
-// 슬라이더 UI 생성
+function getStoredPercent(defaultVal = "100") {
+  return new Promise((resolve) => {
+    try {
+      chrome.storage.sync.get({ [STORAGE_KEY]: defaultVal }, (res) => {
+        resolve(String(res[STORAGE_KEY]));
+      });
+    } catch (e) {
+      resolve(defaultVal);
+    }
+  });
+}
+
+function setStoredPercent(val) {
+  try {
+    chrome.storage.sync.set({ [STORAGE_KEY]: String(val) });
+  } catch (e) {
+    console.error(e);
+  }
+}
+
 const sliderContainer = document.createElement("div");
 Object.assign(sliderContainer.style, {
   position: "fixed",
@@ -19,9 +38,6 @@ slider.min = "0";
 slider.max = "100";
 slider.style.width = "90px";
 
-const savedPercent = parseInt(localStorage.getItem(STORAGE_KEY) || "100", 10);
-slider.value = Number.isNaN(savedPercent) ? "100" : String(savedPercent);
-
 const label = document.createElement("span");
 Object.assign(label.style, {
   color: "white",
@@ -34,15 +50,21 @@ function applyOpacity(percentInt) {
   const opacityValue = clamped / 100;
   document.body.style.opacity = String(opacityValue);
   label.innerText = `${clamped}%`;
-  localStorage.setItem(STORAGE_KEY, String(clamped));
+  setStoredPercent(clamped);
 }
 
-// 이벤트: 슬라이더 변경 시 즉시 적용 & 저장
-slider.addEventListener("input", () => {
-  applyOpacity(parseInt(slider.value, 10));
-});
+(async () => {
+  const raw = await getStoredPercent("100");
+  const savedPercent = parseInt(raw, 10);
+  slider.value = Number.isNaN(savedPercent) ? "100" : String(savedPercent);
 
-sliderContainer.appendChild(slider);
-sliderContainer.appendChild(label);
-document.body.appendChild(sliderContainer);
-applyOpacity(parseInt(slider.value, 10));
+  slider.addEventListener("input", () => {
+    applyOpacity(parseInt(slider.value, 10));
+  });
+
+  sliderContainer.appendChild(slider);
+  sliderContainer.appendChild(label);
+  document.body.appendChild(sliderContainer);
+
+  applyOpacity(parseInt(slider.value, 10));
+})();
